@@ -40,7 +40,9 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.Toast;
 
 import com.astuetz.PagerSlidingTabStrip;
+import org.sufficientlysecure.keychain.KeychainApplication;
 import org.sufficientlysecure.keychain.R;
+import org.sufficientlysecure.keychain.TrackingManager;
 import org.sufficientlysecure.keychain.operations.results.OperationResult;
 import org.sufficientlysecure.keychain.provider.KeyRepository;
 import org.sufficientlysecure.keychain.provider.KeychainContract;
@@ -77,6 +79,8 @@ public class ViewKeyAdvActivity extends BaseActivity implements
     private boolean mActionIconShown;
     private boolean[] mTabsWithActionMode;
 
+    private TrackingManager trackingManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +93,7 @@ public class ViewKeyAdvActivity extends BaseActivity implements
         });
 
         mKeyRepository = KeyRepository.create(this);
+        trackingManager = ((KeychainApplication) getApplication()).getTrackingManager();
 
         mViewPager = findViewById(R.id.pager);
         mSlidingTabLayout = findViewById(R.id.sliding_tab_layout);
@@ -350,6 +355,9 @@ public class ViewKeyAdvActivity extends BaseActivity implements
             mActionMode = null;
         }
         invalidateOptionsMenu();
+
+        String fragmentName = mTabAdapter.getItem(position).getClass().getSimpleName();
+        trackingManager.trackFragmentImpression(getClass().getSimpleName(), fragmentName);
     }
 
     @Override

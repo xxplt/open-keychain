@@ -24,12 +24,8 @@ import java.util.HashMap;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Application;
-import android.app.job.JobScheduler;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
@@ -39,7 +35,6 @@ import org.sufficientlysecure.keychain.network.TlsCertificatePinning;
 import org.sufficientlysecure.keychain.provider.TemporaryFileProvider;
 import org.sufficientlysecure.keychain.service.ContactSyncAdapterService;
 import org.sufficientlysecure.keychain.service.KeyserverSyncAdapterService;
-import org.sufficientlysecure.keychain.ui.util.FormattingUtils;
 import org.sufficientlysecure.keychain.util.PRNGFixes;
 import org.sufficientlysecure.keychain.util.Preferences;
 import timber.log.Timber;
@@ -47,6 +42,7 @@ import timber.log.Timber.DebugTree;
 
 
 public class KeychainApplication extends Application {
+    TrackingManager trackingManager;
 
     /**
      * Called when the application is starting, before any activity, service, or receiver objects
@@ -115,6 +111,9 @@ public class KeychainApplication extends Application {
         TlsCertificatePinning.addPinnedCertificate("keyserver.ubuntu.com", getAssets(), "DigiCertGlobalRootCA.cer");
 
         new Handler().postDelayed(() -> TemporaryFileProvider.cleanUp(getApplicationContext()), 1000);
+
+        trackingManager = TrackingManager.getInstance(getApplicationContext());
+        trackingManager.initialize(this);
     }
 
     /**
@@ -161,5 +160,9 @@ public class KeychainApplication extends Application {
         if (enableDebugLogging) {
             Timber.plant(new DebugTree());
         }
+    }
+
+    public TrackingManager getTrackingManager() {
+        return trackingManager;
     }
 }

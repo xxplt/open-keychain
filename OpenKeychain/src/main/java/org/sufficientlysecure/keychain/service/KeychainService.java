@@ -29,6 +29,8 @@ import android.os.Messenger;
 import android.os.Parcelable;
 import android.os.RemoteException;
 
+import org.sufficientlysecure.keychain.KeychainApplication;
+import org.sufficientlysecure.keychain.TrackingManager;
 import org.sufficientlysecure.keychain.operations.BackupOperation;
 import org.sufficientlysecure.keychain.operations.BaseOperation;
 import org.sufficientlysecure.keychain.operations.BenchmarkOperation;
@@ -73,6 +75,14 @@ public class KeychainService extends Service implements Progressable {
     private AtomicBoolean mActionCanceled = new AtomicBoolean(false);
 
     ThreadLocal<Messenger> mMessenger = new ThreadLocal<>();
+    private TrackingManager trackingManager;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        trackingManager = ((KeychainApplication) getApplication()).getTrackingManager();
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -143,6 +153,8 @@ public class KeychainService extends Service implements Progressable {
                 } else {
                     throw new AssertionError("Unrecognized input parcel in KeychainService!");
                 }
+
+                trackingManager.trackInternalServiceCall(op.getClass().getSimpleName());
 
                 @SuppressWarnings("unchecked") // this is unchecked, we make sure it's the correct op above!
                 OperationResult result = op.execute(inputParcel, cryptoInput);
