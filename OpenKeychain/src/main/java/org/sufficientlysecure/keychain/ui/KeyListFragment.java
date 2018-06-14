@@ -20,10 +20,15 @@ package org.sufficientlysecure.keychain.ui;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -48,8 +53,11 @@ import com.futuremind.recyclerviewfastscroll.FastScroller;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.tonicartos.superslim.LayoutManager;
+import org.sufficientlysecure.keychain.BuildConfig;
 import org.sufficientlysecure.keychain.Constants;
+import org.sufficientlysecure.keychain.KeychainApplication;
 import org.sufficientlysecure.keychain.R;
+import org.sufficientlysecure.keychain.TrackingManager;
 import org.sufficientlysecure.keychain.keyimport.HkpKeyserverAddress;
 import org.sufficientlysecure.keychain.keyimport.ParcelableKeyRing;
 import org.sufficientlysecure.keychain.operations.results.BenchmarkResult;
@@ -252,6 +260,43 @@ public class KeyListFragment extends RecyclerFragment<KeySectionedListAdapter>
         // Prepare the loader. Either re-connect with an existing one,
         // or start a new one.
         getLoaderManager().initLoader(0, null, this);
+
+        maybeAskForAnalytics();
+    }
+
+    private void maybeAskForAnalytics() {
+        Preferences preferences = Preferences.getPreferences(getContext());
+        if (!Constants.DEBUG && !preferences.isAnalyticsHasConsent() && preferences.isAnalyticsAskedPolitely()) {
+            return;
+        }
+
+        try {
+            long firstInstallTime =
+                    getContext().getPackageManager().getPackageInfo(BuildConfig.APPLICATION_ID, 0).firstInstallTime;
+            long threeDaysAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3);
+            boolean installedLessThanThreeDaysAgo = firstInstallTime > threeDaysAgo;
+            if (installedLessThanThreeDaysAgo) {
+                return;
+            }
+        } catch (NameNotFoundException e) {
+            return;
+        }
+
+        TrackingManager trackingManager = ((KeychainApplication) getActivity().getApplication()).getTrackingManager();
+        AlertDialog show = new Builder(getContext())
+                .setMessage(R.string.dialog_analytics_text)
+                .setPositiveButton(R.string.button_analytics_yes, (dialog, which) -> {
+                    preferences.setAnalyticsAskedPolitely();
+                    preferences.setAnalyticsGotUserConsent(true);
+                    trackingManager.refreshSettings(getContext());
+                })
+                .setNegativeButton(R.string.button_analytics_no, (dialog, which) -> {
+                    preferences.setAnalyticsAskedPolitely();
+                    preferences.setAnalyticsGotUserConsent(false);
+                    trackingManager.refreshSettings(getContext());
+                })
+                .show();
+        show.setCanceledOnTouchOutside(false);
     }
 
     private void startSearchForQuery() {
