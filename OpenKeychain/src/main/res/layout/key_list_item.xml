@@ -61,34 +61,6 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/key_list_item_slinger_view"
-        android:layout_width="wrap_content"
-        android:layout_height="?android:attr/listPreferredItemHeight"
-        android:layout_gravity="center_vertical"
-        android:orientation="horizontal"
-        tools:visibility="gone">
-
-        <View
-            android:layout_width="1dip"
-            android:layout_height="match_parent"
-            android:gravity="right"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp"
-            android:background="?android:attr/listDivider" />
-
-        <ImageButton
-            android:id="@+id/key_list_item_slinger_button"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_repeat_grey_24dp"
-            android:padding="16dp"
-            android:background="?android:selectableItemBackground"
-            android:contentDescription="@string/cd_exchange_keys"/>
-
-    </LinearLayout>
-
     <ImageView
         android:id="@+id/key_list_item_status_icon"
         android:layout_width="wrap_content"
